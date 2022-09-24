@@ -1,0 +1,272 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+
+    <title></title>
+    <meta charset="utf-8" />
+    <style>
+        body {
+            background: url('slika3.jpg');
+            background-size: 100vw 100vh;
+        }
+        table {
+            background-color: whitesmoke;
+            border-collapse: collapse;
+            width: 100%;
+            opacity: 0.8;
+            border-radius: 8px;
+        }
+        tr {
+            border-bottom: 1px solid #ddd;
+            text-align:center;
+        }
+        h1{
+            text-align:center;
+            color:black;
+        }
+        h3{
+            color:black;
+        }
+        p {
+            color: black;
+        }
+        .tableDiv {
+            background-color: white;
+            box-shadow: 0px 2px 12px rgba(204, 0, 255,0.3);
+            border-radius: 8px;
+        }
+        .navigationBtn {
+            padding: 8px;
+            text-transform: uppercase;
+            margin-right: 2px;
+            font-weight: 600;
+            background-color: #cc00ff;
+            color: white;
+            border-width: 0px;
+            border-radius: 4px;
+        }
+        .navigationBtn:hover {
+            background-color: #8f00b3;
+            cursor:pointer
+        }
+    </style>
+    <script src="Scripts/jquery-3.4.1.js"></script>
+    <script type="text/javascript">
+        function fitnessCenter() {
+            location.href = "FitnessCenter.html";
+        }
+        function groupTrainig() {
+            location.href = "TrainingModify.html";
+        }
+        function onClickDetails(fitnessCenterId) {
+            location.href = 'FitnessCenterDetails.html?fitnessCenterId=' + fitnessCenterId;
+        }
+        function userProfile() {
+            location.href = 'ProfilePage.html';
+        }
+        function AddGroupTraining() {
+            location.href = "GroupTraining.html";
+        }
+        function AddTrainer() {
+            location.href = "Trainer.html";
+        }
+        function Preview() {
+            location.href = "TrainersAndCenters.html";
+        }
+        function PreviewTrainings(){
+            location.href = "Trainings.html";
+        }
+        function filer(sort) {
+            console.log(sort);
+            if (!sort) {
+                sort = 1;
+            }
+
+            switch (sort) {
+                case 1:
+                    $('#nameDesc').hide();
+                    $('#nameAsc').show();
+                    break;
+                case 2:
+                    $('#nameDesc').show();
+                    $('#nameAsc').hide();
+                    break;
+                case 3:
+                    $('#addressDesc').hide();
+                    $('#addresseAsc').show();
+                    break;
+                case 4:
+                    $('#addressDesc').show();
+                    $('#addresseAsc').hide();
+                    break;
+                case 5:
+                    $('#openingYearDesc').hide();
+                    $('#openingYearAsc').show();
+                    break;
+                case 6:
+                    $('#openingYearDesc').show();
+                    $('#openingYearAsc').hide();
+                    break;
+            }
+
+            let centerName = $('#centerName').val();
+            let address = $('#address').val();
+            let openingYear = $('#openingYear').val();
+            
+           
+            function loadFitnesCenterss() {
+                console.log("Uslo u funkciju");
+                $.get(`/api/fitnessCenters?id=&address=${address}&openingYear=${openingYear}&centerName=${centerName}&sort=${sort}`, function (data, status) {
+                    console.log("Funkcija");
+                    const parsedData = (data);
+                    console.log(parsedData);
+                    let tableOfFitnessCenters = '<tr><th>Naziv</th><th>Adresa</th><th>Godina otvaranja</th><th></th></tr>';
+                    for (element in parsedData) {
+                        if (parsedData[element].Deleted !== true) {
+                            let fitnessCenter = '<td>' + parsedData[element].CenterName + '</td>';
+                            fitnessCenter += '<td>' + parsedData[element].Address + '</td>';
+                            fitnessCenter += '<td>' + parsedData[element].OpeningYear + '</td>';
+                            fitnessCenter += '<td><button onClick="onClickDetails(' + parsedData[element].Id + ')">Detalji</button></td>';
+                            tableOfFitnessCenters += '<tr>' + fitnessCenter + '</tr>';
+                        }
+                        }
+                        $('#content').html(tableOfFitnessCenters);
+                        $('#loading').hide();
+                    });
+                }
+
+                loadFitnesCenterss();
+
+            
+        }
+
+        $(document).ready(function () {
+
+            function getCookie(cookieName) {
+                let cookie = {};
+                document.cookie.split(';').forEach(function (el) {
+                    let [key, value] = el.split('=');
+                    cookie[key.trim()] = value;
+                })
+
+                console.log(cookie[cookieName])
+                return cookie[cookieName];
+            }
+
+            if (!getCookie("roleId") || getCookie("roleId").length === 0) {
+                $('#addTraining').hide();
+                $('#trainingsPreview').hide();
+                $('#fitnessCenter').hide();
+                $('#addTrainer').hide();
+                $('#fcPreview').hide();
+                $('#logoutBtn').hide();
+                $('#userProfile').hide();
+                $('#loginBtn').show();
+            } else {
+                $('#loginBtn').hide();
+            }
+
+            if (getCookie("roleId") !== "1") {
+                $('#addTraining').hide();
+                $('#trainingsPreview').hide();
+            }
+
+            if (getCookie("roleId") != 0) {
+                $('#fitnessCenter').hide();
+                $('#addTrainer').hide();
+                $('#fcPreview').hide();
+            }
+
+            if (!getCookie("username")) {
+                $('#logoutBtn').hide();
+            }
+            
+            
+            $.get("/api/fitnessCenters", function (data, status) {
+                try {
+                    const parsedData = JSON.parse(data);
+
+                    let tableOfFitnessCenters = '<tr><th>Naziv</th><th>Adresa</th><th>Godina otvaranja</th><th></th></tr>';
+                    for (element in parsedData) {
+                        if (parsedData[element].Deleted !== true) {
+                            let fitnessCenter = '<td>' + parsedData[element].CenterName + '</td>';
+                            fitnessCenter += '<td>' + parsedData[element].Address + '</td>';
+                            fitnessCenter += '<td>' + parsedData[element].OpeningYear + '</td>';
+                            fitnessCenter += '<td><button onClick="onClickDetails(' + parsedData[element].Id + ')">Detalji</button></td>';
+                            tableOfFitnessCenters += '<tr>' + fitnessCenter + '</tr>';
+                        }
+                    }
+                    $('#content').html(tableOfFitnessCenters);
+                    $('#loading').hide();
+                } catch {
+
+                    $('#loading').hide();
+                }
+            });
+
+            
+
+        });
+        function LogIn() {
+            window.location.href = "LoginUser.html";
+        }
+
+        function logout() {
+            document.cookie = "username=" + "";
+            document.cookie = "roleId=" + "";
+            window.location.href = "LoginUser.html";
+        }
+
+    </script>
+
+</head>
+<body>
+    <button class="navigationBtn" id="fitnessCenter" onclick="fitnessCenter()">Dodavanje fitnes centara</button>
+    <button class="navigationBtn" onclick="LogIn()" id="loginBtn">Prijava korisnika</button>
+    <button class="navigationBtn" onclick="logout()" id="logoutBtn">Odjava korisnika</button>
+    <button class="navigationBtn" id="userProfile" onclick="userProfile()">Korisnicki profil</button>
+    <button class="navigationBtn" id="addTraining" onclick="AddGroupTraining()">Dodaj trening</button>
+    <button class="navigationBtn" id="addTrainer" onclick="AddTrainer()">Dodaj Trenera</button>
+    <button class="navigationBtn" id="fcPreview" onclick="Preview()">Pregled centara i trenera</button>
+    <button class="navigationBtn" id="trainingsPreview" onclick="PreviewTrainings()">Pregled treninga</button>
+    <h1>Fitnes centri</h1>
+
+
+    
+    <div class="tableDiv">
+        <table>
+            <tr>
+                <th>
+                    <button id="nameDesc" onclick="filer(1)">↓</button>
+                    <button id="nameAsc" onclick="filer(2)" style="display:none">↑</button>
+                </th>
+                <th>
+                    <button id="addressDesc" onclick="filer(3)">↓</button>
+                    <button id="addresseAsc" onclick="filer(4)" style="display:none">↑</button>
+                </th>
+                <th>
+                    <button id="openingYearDesc" onclick="filer(5)">↓</button>
+                    <button id="openingYearAsc" onclick="filer(6)" style="display:none">↑</button>
+                </th>
+            </tr>
+        </table>
+        <table border="1" id="content">
+            <tr><th>Naziv</th><th>Adresa</th><th>Godina otvaranja</th><th></th></tr>
+        </table>
+        <div id="loading">
+            Ucitavanje podataka...
+        </div>
+    </div>
+    
+    
+    <h3>Pretraga fitnes centara</h3>
+    <p>Unesite naziv:</p><input type="text" id="centerName" name="centerName" />
+
+    <p>Unesite adresu </p><input type="text" id="address" name="address" />
+
+    <p>Unesite godinu otvaranja: </p><input type="text" id="openingYear" name="openingYear" /><br /><br />
+    <button onclick="filer()">Pretrazi</button>
+
+
+</body>
+</html>

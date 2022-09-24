@@ -1,0 +1,185 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <script src="Scripts/jquery-3.4.1.js"></script>
+    <style>
+        body {
+            background: url("slika9.jpg");
+            background-size: 100vw 100vh;
+        }
+        table {
+            color: white;
+        }
+        h1{
+            color:white;
+        }
+        .navigationBtn {
+            padding: 8px;
+            text-transform: uppercase;
+            margin-right: 2px;
+            font-weight: 600;
+            background-color: #cc00ff;
+            color: white;
+            border-width: 0px;
+            border-radius: 4px;
+        }
+
+            .navigationBtn:hover {
+                background-color: #8f00b3;
+                cursor: pointer
+            }
+    </style>
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            function getCookie(cookieName) {
+                let cookie = {};
+                document.cookie.split(';').forEach(function (el) {
+                    let [key, value] = el.split('=');
+                    cookie[key.trim()] = value;
+                })
+
+                console.log(cookie[cookieName])
+                return cookie[cookieName];
+            }
+
+            let cookieData = document.cookie;
+
+            if (!cookieData || (getCookie("username") === "" && getCookie("roleId" === ""))) {
+                window.location.href = "LoginUser.html";
+            }
+
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const myParam = urlParams.get('centerId');
+
+
+            if (myParam) {
+                $("#titleAdd").hide();
+                $("#addBtn").hide();
+            } else {
+
+                $("#titleEdit").hide();
+                $("#editBtn").hide();
+            }
+        })
+
+        function getCookie(cookieName) {
+            let cookie = {};
+            document.cookie.split(';').forEach(function (el) {
+                let [key, value] = el.split('=');
+                cookie[key.trim()] = value;
+            })
+
+            console.log(cookie[cookieName])
+            return cookie[cookieName];
+        }
+
+        let cookieData = document.cookie;
+
+        if (!cookieData || (getCookie("username") === "" && getCookie("roleId" === ""))) {
+            window.location.href = "LoginUser.html";
+        }
+
+
+        function Back() {
+            window.location.href = 'FitnessCenters.html';
+        }
+        function Add() {
+
+            let centerName = $('#centerName').val();
+            let address = $('#address').val();
+            let openingYear = $('#openingYear').val();
+            let monthlyMembership = $('#monthlyMembership').val();
+            let annualMembership = $('#annualMembership').val();
+            let priceOfOneTraining = $('#priceOfOneTraining').val();
+            let priceOfOneGroupTraining = $('#priceOfOneGroupTraining').val();
+            let priceOfOnePersonalTraining = $('#priceOfOnePersonalTraining').val();
+
+            $.ajax({
+                url: 'api/fitnessCenters',
+                type: "POST",
+                data: JSON.stringify({
+                    'centerName': centerName, deleted:false, openingYear: openingYear, 'address': address, 'owner': getCookie("username"), 'monthlyMembership': monthlyMembership, 'annualMembership': annualMembership, 'priceOfOneTraining': priceOfOneTraining, 'priceOfOneGroupTraining': priceOfOneGroupTraining, 'priceOfOnePersonalTraining': priceOfOnePersonalTraining
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function () {
+                    alert("Uspjesno dodat fitnes centar!")
+                    window.location.href = 'FitnessCenters.html';
+                },
+                error: function (error) {
+                    alert(error.responseJSON);
+                }
+            })
+        }
+
+        function Edit() {
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const myParam = urlParams.get('centerId');
+
+            let centerName = $('#centerName').val();
+            let address = $('#address').val();
+            let openingYear = $('#openingYear').val();
+            let monthlyMembership = $('#monthlyMembership').val();
+            let annualMembership = $('#annualMembership').val();
+            let priceOfOneTraining = $('#priceOfOneTraining').val();
+            let priceOfOneGroupTraining = $('#priceOfOneGroupTraining').val();
+            let priceOfOnePersonalTraining = $('#priceOfOnePersonalTraining').val();
+
+            var centerData = {
+                id: myParam,
+                'centerName': centerName,
+                deleted: false,
+                openingYear: openingYear.length > 0 ? parseInt(openingYear) : 0,
+                'address': address,
+                'monthlyMembership': monthlyMembership.length > 0 ? parseInt(monthlyMembership) : 0,
+                'annualMembership': annualMembership.length > 0 ? parseInt(annualMembership) : 0,
+                'priceOfOneTraining': priceOfOneTraining.length > 0 ? parseInt(priceOfOneTraining) : 0,
+                'priceOfOneGroupTraining': priceOfOneGroupTraining.length > 0 ? parseInt(priceOfOneGroupTraining) : 0,
+                'priceOfOnePersonalTraining': priceOfOnePersonalTraining.length > 0 ? parseInt(priceOfOnePersonalTraining):0
+            }
+
+            console.log(JSON.stringify(centerData));
+            $.ajax({
+                url: 'api/fitnessCenters',
+                type: "PUT",
+                data: JSON.stringify(centerData),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    window.location.href = "TrainersAndCenters.html";
+                    alert("Uspjesno izmjenjen fitnes centar!")
+                },
+                error: function (error) {
+
+                    alert("Greska!");
+                }
+            })
+        }
+
+    </script>
+
+    <title></title>
+</head>
+<body>
+    <button class="navigationBtn" onclick="Back()">Nazad</button>
+    <h1 id="titleAdd">Dodavanje fitnes centara</h1>
+    <h1 id="titleEdit">Izmjena fitnes centra</h1>
+    <table>
+        <tr><td>Naziv fitnes centra: </td><td><input type="text" name="centerName" id="centerName" /></td></tr>
+        <tr><td>Adresa: </td><td><input type="text" name="address" id="address" /></td></tr>
+        <tr><td>Godina otvaranja: </td><td><input type="number" name="openingYear" id="openingYear" /></td></tr>
+        <tr><td>Cijena mjesecne clanarine: </td><td><input type="number" name="monthlyMembership" id="monthlyMembership" /></td></tr>
+        <tr><td>Cijena godisnje clanarine: </td><td><input type="number" name="annualMembership" id="annualMembership" /></td></tr>
+        <tr><td>Cijena jendog treninga: </td><td><input type="number" name="priceOfOneTraining" id="priceOfOneTraining" /> </td></tr>
+        <tr><td>Cijena jendog grupnog treninga: </td><td><input type="number" name="priceOfOneGroupTraining" id="priceOfOneGroupTraining" /></td></tr>
+        <tr><td>Cijena jednog treninga sa personalnim trenerom: </td><td><input type="number" name="priceOfOnePersonalTraining" id="priceOfOnePersonalTraining" /></td></tr>
+        <tr><td colspan="2"><button onclick="Add()" id="addBtn">Dodaj</button></td></tr>
+        <tr><td colspan="2"><button onclick="Edit()" id="editBtn">Izmjeni</button></td></tr>
+    </table>
+</body>
+</html>

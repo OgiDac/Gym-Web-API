@@ -1,0 +1,1 @@
+[{"typeId":0,"trainingName":"Yoga"},{"typeId":1,"trainingName":"Les mills tone"},{"typeId":2,"trainingName":"Body pump"}]

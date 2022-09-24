@@ -1,0 +1,148 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8" />
+    <style>
+        body {
+            background: url('slika4.jpg');
+            background-size: 100vw 100vh;
+        }
+
+        .center {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        h1 {
+            text-align: center;
+        }
+		
+        .navigationBtn {
+            padding: 8px;
+            text-transform: uppercase;
+            margin-right: 2px;
+            font-weight: 600;
+            background-color: #cc00ff;
+            color: white;
+            border-width: 0px;
+            border-radius: 4px;
+        }
+
+            .navigationBtn:hover {
+                background-color: #8f00b3;
+                cursor: pointer
+            }
+    </style>
+
+
+    <script src="Scripts/jquery-3.4.1.js"></script>
+    <script type="text/javascript">
+        function GoBack() {
+            window.location.href = 'FitnessCenters.html';
+        }
+        function getCookie(cookieName) {
+            let cookie = {};
+            document.cookie.split(';').forEach(function (el) {
+                let [key, value] = el.split('=');
+                cookie[key.trim()] = value;
+            })
+
+            console.log(cookie[cookieName])
+            return cookie[cookieName];
+        }
+        function Register() {
+            let username = $('#username').val();
+            if (username.length === 0) {
+                alert('Sva polja moraju biti popunjena!');
+                return;
+            }
+            let password = $('#password').val();
+            if (password.length === 0) {
+                alert('Sva polja moraju biti popunjena!');
+                return;
+            }
+            let name = $('#name').val();
+            if (name.length === 0) {
+                alert('Sva polja moraju biti popunjena!');
+                return;
+            }
+            let surname = $('#surname').val();
+            if (surname.length === 0) {
+                alert('Sva polja moraju biti popunjena!');
+                return;
+            }
+            let gender = $('#gender').val();
+            if (gender.length === 0) {
+                alert('Sva polja moraju biti popunjena!');
+                return;
+            }
+            let email = $('#email').val();
+            if (email.length === 0) {
+                alert('Sva polja moraju biti popunjena!');
+                return;
+            }
+            let birthDate = $('#birthDate').val();
+            if (birthDate.length === 0) {
+                alert('Sva polja moraju biti popunjena!');
+                return;
+            }
+            let fitnessCenterTrainer = $('#fitnessCenter').val();
+
+            const userData = {
+                'username': username, fitnessCenterTrainer: fitnessCenterTrainer, 'password': password, 'name': name, 'surname': surname, 'gender': gender, 'email': email, 'birthDate': birthDate, 'roleId': 1, blocked: false,
+            };
+
+            $.ajax({
+                url: 'api/users',
+                type: "POST",
+                data: JSON.stringify(userData),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function () {
+                    alert("Uspjesno dodat korisnik!")
+                    window.location.href = 'FitnessCenters.html';
+                },
+                error: function (error) {
+                    alert(error.responseJSON);
+                }
+            })
+
+        }
+        $(document).ready(function () {
+            $.get(`/api/fitnessCenters`, function (data, status) {
+                console.log("Funkcija");
+                const parsedData = JSON.parse(data);
+
+                let options = "";
+
+                for (element in parsedData) {
+                    if (parsedData[element].Owner === getCookie("username")) {
+                        options += `<option value="${parsedData[element].Id}">${parsedData[element].CenterName}</option>`;
+                    }
+                }
+                console.log(options);
+                $('#fitnessCenter').html(options);
+               
+            });
+        })
+    </script>
+</head>
+<body>
+    <button class='navigationBtn' onclick="GoBack()">Vrati se nazad</button>
+    <h1>Registrovanje novog trenera</h1>
+
+    <table border="0" class="center">
+        <tr><td>Korisnicko ime: </td><td><input type="text" id="username" name="username" /></td></tr>
+        <tr><td>Lozinka: </td><td><input type="password" id="password" name="password" /></td></tr>
+        <tr><td>Ime: </td><td><input type="text" id="name" name="name" /></td></tr>
+        <tr><td>Prezime: </td><td><input type="text" id="surname" name="surname" /></td></tr>
+        <tr><td>Pol: </td><td><input type="text" id="gender" name="gender" /></td></tr>
+        <tr><td>Fitnes centar: </td><td> <select id="fitnessCenter"></select></td></tr>
+        <tr><td>Email adresa: </td><td><input type="text" id="email" name="email" /></td></tr>
+        <tr><td>Datum rodjenja: </td><td><input type="date" data-date="" data-date-format="DD MMMM YYYY" value="1900-01-01" id="birthDate" name="birthDate" /></td></tr>
+        <tr><td colspan="2"><input type="button" value="Potvrdi" id="register" onclick="Register()" /></td></tr>
+    </table>
+
+</body>
+</html>

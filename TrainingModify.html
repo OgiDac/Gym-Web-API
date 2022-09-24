@@ -1,0 +1,110 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <style>
+        body {
+            background: url("slika9.jpg");
+            background-size: 100vw 100vh;
+        }
+        h1{
+            color:white;
+        }
+        table{
+            color:white;
+        }
+    </style>
+    <script src="Scripts/jquery-3.4.1.js"></script>
+    <script type="text/javascript">
+
+        function getCookie(cookieName) {
+            let cookie = {};
+            document.cookie.split(';').forEach(function (el) {
+                let [key, value] = el.split('=');
+                cookie[key.trim()] = value;
+            })
+
+            console.log(cookie[cookieName])
+            return cookie[cookieName];
+        }
+
+        let cookieData = document.cookie;
+
+        if (!cookieData || (getCookie("username") === "" && getCookie("roleId" === ""))) {
+            window.location.href = "LoginUser.html";
+        }
+
+        function Add() {
+            let trainingName = $('#trainingName').val();
+            let fitnessCenter = $('#fitnessCenters').val();
+            let trainingType = $('#trainingType').val();
+            let trainingDuration = $('#trainingDuration').val();
+            let dateAndTime = $('#dateAndTime').val();
+            let maxNumberOfPeople = $('#maxNumberOfPeople').val();
+
+
+            var parts = dateAndTime.split("/");
+            var d = new Date(parseInt(parts[2], 10),
+                parseInt(parts[1], 10) - 1,
+                parseInt(parts[0], 10) - 3);
+            var currentDate = new Date();
+
+
+            if (d > currentDate) {
+                $.ajax({
+                    url: 'api/groupTraining',
+                    type: "POST",
+                    data: JSON.stringify({
+                        'trainingName': trainingName, 'trainerUsername': getCookie("username"), 'fitnessCenter': fitnessCenter, 'trainingType': trainingType, 'trainingDuration': trainingDuration, 'dateAndTime': dateAndTime, 'maxNumberOfPeople': maxNumberOfPeople
+                    }),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function () {
+                        alert("Uspjesno dodat trening!")
+                        window.location.href = 'FitnessCenters.html';
+                    },
+                    error: function (error) {
+                        alert(error.responseJSON);
+                    }
+                })
+            } else {
+
+                alert("Datum mora biti barem 3 dana veci od trenutnog datuma.")
+            }
+        }
+
+        $(document).ready(function () {
+            $.get("/api/fitnessCenters", function (data, status) {
+                const parsedData = JSON.parse(data);
+
+                let options = '';
+                for (element in parsedData) {
+                    if (parsedData[element].Id === getCookie("fitnessCenterTrainer"))
+                        options += `<option value=${parsedData[element].Id} selected>${parsedData[element].CenterName}</option>`
+                }
+                $('#fitnessCenters').html(options);
+            });
+        });
+
+    </script>
+    <title></title>
+</head>
+<body>
+    <h1>Izmjena podataka</h1>
+    <table class="center">
+        <tr><td>Naziv treninga: </td><td><input type="text" id="trainingName" name="trainingName" /></td></tr>
+        <tr>
+            <td>Fitnes centar u kome se odrzava trening: </td>
+            <td>
+                <select id="fitnessCenters">
+                </select>
+            </td>
+        </tr>
+        <tr><td>Tip treninga: </td><td><input type="text" id="trainingType" name="trainingType" /></td></tr>
+        <tr><td>Trajanje treninga: </td><td><input type="text" id="trainingDuration" name="trainingDuration" /></td></tr>
+        <tr><td>Datum i vrijeme treninga: </td><td><input type="text" id="dateAndTime" name="dateAndTime" /></td></tr>
+        <tr><td>Maksimalan broj posjetilaca: </td><td><input type="text" id="maxNumberOfPeople" name="maxNumberOfPeople" /></td></tr>
+        <tr><td colspan="2"><button onclick="Add()">Modifikuj</button></td></tr>
+    </table>
+</body>
+</html>

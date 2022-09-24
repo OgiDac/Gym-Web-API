@@ -1,0 +1,271 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8" />
+    <style>
+        body {
+            background: url('slika8.jpg');
+            background-size: 100vw 100vh;
+        }
+
+        h1 {
+            color: black;
+        }
+
+        p {
+            color: black;
+        }
+        /*#flex{
+            display:flex;
+        }*/
+        div {
+            display:block;
+        }
+        table {
+            margin-top: 40px;
+            background-color: whitesmoke;
+            border-collapse: collapse;
+            width: 100%;
+            opacity: 0.8;
+        }
+        .searchInput{
+            margin-right:12px
+        }
+        .navigationBtn {
+            padding: 8px;
+            text-transform: uppercase;
+            margin-right: 2px;
+            font-weight: 600;
+            background-color: #cc00ff;
+            color: white;
+            border-width: 0px;
+            border-radius: 4px;
+        }
+
+            .navigationBtn:hover {
+                background-color: #8f00b3;
+                cursor: pointer
+            }
+    </style>
+    <script src="Scripts/jquery-3.4.1.js"></script>
+    <script type="text/javascript"> 
+        function getCookie(cookieName) {
+            let cookie = {};
+            document.cookie.split(';').forEach(function (el) {
+                let [key, value] = el.split('=');
+                cookie[key.trim()] = value;
+            })
+
+            console.log(cookie[cookieName])
+            return cookie[cookieName];
+        }
+       
+        let cookieData = document.cookie;
+
+        if (!cookieData || (getCookie("username") === "" && getCookie("roleId" === ""))) {
+            window.location.href = "LoginUser.html";
+        }
+
+        function filer(sort) {
+            console.log(sort);
+        
+
+            loadGroupTraining(undefined,undefined,undefined,sort)
+
+
+        }
+        function loadGroupTraining(trainingName,centerName,trainingType,sort) {
+            $.get("/api/groupTraining?id=", function (data, status) {
+
+
+                function checkSearchParameters(element) {
+                    return ((!trainingName || element.TrainingName.includes(trainingName)) && (!centerName || element.FitnessCenter.includes(centerName)) && (!trainingType || element.TrainingType.includes(trainingType)));
+                }
+
+                if (!sort) {
+                    sort = 1;
+                }
+
+                let nameFilter = `<button onclick="filer(${sort === 1 ? 2 : 1})">${ sort === 2 ? "↑" : "↓"}`;
+                let typeFilter = `<button onclick="filer(${sort === 4 ? 3 : 4})">${sort === 4 ? "↑" : "↓"}`;
+                let dateFilter = `<button onclick="filer(${sort === 6 ? 5 : 6})">${sort === 6 ? "↑" : "↓"}`;
+
+
+               let tableOfHistoryGroupTrainings = `<tr><th>Naziv ${nameFilter}</th><th>Tip treninga ${typeFilter}</th><th>Fitnes Centar</th><th>Trajanje treninga</th><th>Datum i vrijeme treninga ${dateFilter}</th><th>Maksimalan broj posjetilaca</th><th>Spisak posjetilaca</th><th></th></tr>`;
+
+                let tempData = data;
+
+
+                switch (sort) {
+                    case 1:
+                        tempData = tempData.sort((a, b) => {
+                            return a.TrainingName.localeCompare(b.TrainingName);
+                        })
+                        break;
+                    case 2:
+                        tempData = tempData.sort((a, b) => {
+                            return b.TrainingName.localeCompare(a.TrainingName);
+                        })
+                        break;
+                    case 3:
+                        tempData = tempData.sort((a, b) => {
+                            return a.TrainingType.localeCompare(b.TrainingType);
+                    })
+                        break;
+                    case 4:
+                        tempData = tempData.sort((a, b) => {
+                            return b.TrainingType.localeCompare(a.TrainingType);
+                    })
+                        break;
+                    case 5:
+                        tempData = tempData.sort((a, b) => {
+                            var parts = a.DateAndTime.split("/");
+                            var d1 = new Date(parseInt(parts[2], 10),
+                                parseInt(parts[1], 10) - 1,
+                                parseInt(parts[0], 10));
+
+                            var parts2 = b.DateAndTime.split("/");
+                            var d2 = new Date(parseInt(parts2[2], 10),
+                                parseInt(parts2[1], 10) - 1,
+                                parseInt(parts2[0], 10));
+                            return Number(d2) - Number(d1);
+                        })
+                        break;
+                    case 6:
+                        tempData = tempData.sort((a, b) => {
+                            var parts = a.DateAndTime.split("/");
+                            var d1 = new Date(parseInt(parts[2], 10),
+                                parseInt(parts[1], 10) - 1,
+                                parseInt(parts[0], 10));
+
+                            var parts2 = b.DateAndTime.split("/");
+                            var d2 = new Date(parseInt(parts2[2], 10),
+                                parseInt(parts2[1], 10) - 1,
+                                parseInt(parts2[0], 10));
+                            return Number(d1) - Number(d2);
+                        })
+                        break;
+                }
+
+                for (element in tempData) {
+                    var parts = tempData[element].DateAndTime.split("/");
+                    var d = new Date(parseInt(parts[2], 10),
+                        parseInt(parts[1], 10) - 1,
+                        parseInt(parts[0], 10) );
+                    var currentDate = new Date();
+
+                    if ((d < currentDate) && checkSearchParameters(tempData[element]) && (tempData[element].VisitorList && tempData[element].VisitorList.find((e) => e === getCookie("username")))) {
+                        let groupTraining = '<td>' + '' + tempData[element].TrainingName + '</td>';
+                        groupTraining += '<td>' + tempData[element].TrainingType + '</td>';
+                        groupTraining += '<td>' + tempData[element].FitnessCenter + '</td>';
+                        groupTraining += '<td>' + tempData[element].TrainingDuration + '</td>';
+                        groupTraining += '<td>' + tempData[element].DateAndTime + '</td>';
+                        groupTraining += '<td>' + tempData[element].MaxNumberOfPeople + '</td>';
+                        groupTraining += '<td>' + (tempData[element].VisitorList === null ? "Nema prijavljenih" : tempData[element].VisitorList) + '</td>';
+
+                        tableOfHistoryGroupTrainings += '<tr>' + groupTraining + '</tr>';
+                    }
+                }
+                $('#trainingHistory').html(tableOfHistoryGroupTrainings);
+
+            });
+        }
+
+        function filterGroupTrainings() {
+            var trainingName = $('#trainingName').val();
+            var trainingType = $('#trainingType').val();
+            var fitnessCenter = $('#fitnessCenter').val();
+
+            loadGroupTraining(trainingName, fitnessCenter, trainingType);
+        }
+
+        function EditData() {
+            window.location.href = "ChangeTheData.html";
+        }
+        function Back() {
+            location.href = 'FitnessCenters.html';
+        }
+        $(document).ready(function () {
+            loadGroupTraining();
+            function userProfile() {
+                let cookieData = document.cookie;
+
+
+                if (!cookieData || (getCookie("username") === "" && getCookie("roleId") === "")) {
+                    window.location.href = "LoginUser.html";
+                }
+
+                if (getCookie("roleId") != 2) {
+
+                    $("#table").hide();
+                }
+                let username = getCookie("username");
+
+
+                $.get("/api/users?username=" + username, function (data, status) {
+
+                    console.log("Bilo sta");
+                    console.log(data);
+                    let uname = "Korisnicko ime: " + data[0].Username;
+                    $('#uname').html(uname);
+
+                    let password = "Lozinka: " + data[0].Password;
+                    $('#password').html(password);
+
+                    let name = "Ime: " + data[0].Name;
+                    $('#name').html(name);
+
+                    let surname = "Prezime: " + data[0].Surname;
+                    $('#surname').html(surname);
+
+                    let gender = "Pol: " + data[0].Gender;
+                    $('#gender').html(gender);
+
+                    let email = "Email: " + data[0].Email;
+                    $('#email').html(email);
+
+                    let birthDate = "Datum rodjenja: " + data[0].BirthDate;
+                    $('#birthDate').html(birthDate);
+
+                });
+
+            }
+
+
+            userProfile();
+        });
+
+
+
+    </script>
+</head>
+<body>
+    <button class="navigationBtn" onclick="Back()">Vrati se na pocetnu stranu</button>
+    <div id="flex">
+        <div>
+            <h1>Korisnicki profil</h1>
+            <p id="uname"></p>
+            <p id="password"></p>
+            <p id="name"></p>
+            <p id="surname"></p>
+            <p id="gender"></p>
+            <p id="email"></p>
+            <p id="birthDate"></p>
+            <button onclick="EditData()">Izmjeni podatke</button>
+        </div>
+        <div id="table">
+
+            <table border="1" id="trainingHistory">
+                <tr><th>Naziv</th><th>Tip treninga</th><th>Fitnes Centar</th><th>Trajanje treninga</th><th>Datum i vrijeme treninga</th><th>Maksimalan broj posjetilaca</th><th>Spisak posjetilaca</th><th></th></tr>
+            </table>
+            <div>
+                <p>Pretrazi po nazivu treninga, tipu treninga i nazivu fitnes centra</p>
+                <input id="trainingName" class="searchInput" type="text" placeholder="Naziv treninga" /><input placeholder="Naziv fitnes centra" id="fitnessCenter" class="searchInput" type="text" /><input id="trainingType" class="searchInput" type="text" placeholder="Tip Treninga" /><button onclick="filterGroupTrainings()">Pretrazi</button>
+            </div>
+        </div>
+        
+
+    </div>
+</body>
+</html>

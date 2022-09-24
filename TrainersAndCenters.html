@@ -1,0 +1,211 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style>
+        body {
+            background: url('slika3.jpg');
+            background-size: 100vw 100vh;
+
+        }
+        table {
+            background-color: whitesmoke;
+            border-collapse: collapse;
+            width: 100%;
+            opacity: 0.8;
+        }
+        tr {
+            border-bottom: 1px solid #ddd;
+            text-align:center
+        }
+        .tableDiv {
+            background-color: white;
+            box-shadow: 0px 2px 12px rgba(204, 0, 255,0.3);
+            border-radius: 8px;
+        }
+
+        .navigationBtn {
+            padding: 8px;
+            text-transform: uppercase;
+            margin-right: 2px;
+            font-weight: 600;
+            background-color: #cc00ff;
+            color: white;
+            border-width: 0px;
+            border-radius: 4px;
+        }
+
+            .navigationBtn:hover {
+                background-color: #8f00b3;
+                cursor: pointer
+            }
+    </style>
+    <script src="Scripts/jquery-3.4.1.js"></script>
+    <script>
+
+        var myFitnessCenters = [];
+        function getCookie(cookieName) {
+            let cookie = {};
+            document.cookie.split(';').forEach(function (el) {
+                let [key, value] = el.split('=');
+                cookie[key.trim()] = value;
+            })
+
+            console.log(cookie[cookieName])
+            return cookie[cookieName];
+        }
+        function Back() {
+            window.location.href = 'FitnessCenters.html';
+        }
+
+        function LoadCenters() {
+            $.get(`/api/fitnessCenters`, function (data, status) {
+                const parsedData = JSON.parse(data);
+
+                let tableOfFitnessCenters = '<tr><th>Naziv</th><th>Adresa</th><th>Godina otvaranja</th><th></th></tr>';
+
+                for (element in parsedData) {
+                    if (parsedData[element].Owner === getCookie("username") && parsedData[element].Deleted !== true) {
+                        myFitnessCenters.push(parsedData[element].Id);
+                        let fitnessCenter = '<td>' + parsedData[element].CenterName + '</td>';
+                        fitnessCenter += '<td>' + parsedData[element].Address + '</td>';
+                        fitnessCenter += '<td>' + parsedData[element].OpeningYear + '</td>';
+                        fitnessCenter += `<td><button onClick="DeleteFitnessCenter(${parsedData[element].Id})">Obriši</button></td>`;
+                        fitnessCenter += `<td><button onClick="EditfitnessCenter(${parsedData[element].Id})">Izmjeni</button></td>`;
+                        tableOfFitnessCenters += '<tr>' + fitnessCenter + '</tr>';
+                    }
+                }
+                $('#fitnessCenters').html(tableOfFitnessCenters);
+
+            });
+        }
+
+        function LoadUsers() {
+            $.get(`/api/users`, function (data, status) {
+                const parsedData = JSON.parse(data);
+                console.log(parsedData[1]);
+                console.log(myFitnessCenters);
+
+
+                let tableOfTrainers = '<tr><th>Ime Prezime</th><th>Email</th><th>Pol</th><th></th></tr>';
+
+                for (element in parsedData) {
+                    if (myFitnessCenters.find((e) => e === parsedData[element].FitnessCenterTrainer)) {
+                        let username = parsedData[element].Username;
+                        console.log(username);
+                        let trainer = '<td>' + parsedData[element].Name + " " + parsedData[element].Surname + '</td>';
+                        trainer += '<td>' + parsedData[element].Email + '</td>';
+                        trainer += '<td>' + parsedData[element].Gender + '</td>';
+                        if (!parsedData[element].Blocked)
+                        trainer += `<td><button onClick="BlockUser('${username}')">Blokiraj</button></td>`;
+                        tableOfTrainers += '<tr>' + trainer + '</tr>';
+                    }
+                }
+                $('#trainers').html(tableOfTrainers);
+
+            });
+        }
+        
+        $(document).ready(function () {
+            function getCookie(cookieName) {
+                let cookie = {};
+                document.cookie.split(';').forEach(function (el) {
+                    let [key, value] = el.split('=');
+                    cookie[key.trim()] = value;
+                })
+
+                console.log(cookie[cookieName])
+                return cookie[cookieName];
+            }
+
+            let cookieData = document.cookie;
+
+            if (!cookieData || (getCookie("username") === "" && getCookie("roleId" === ""))) {
+                window.location.href = "LoginUser.html";
+            }
+            LoadCenters();
+            LoadUsers();
+        })
+
+
+        function BlockUser(username) {
+            console.log(JSON.stringify({
+                'username': username, blocked: true, 'password': "", 'name': "", 'surname': "", 'gender': "", 'email': "", 'birthDate': "", 'roleId': 1
+            }));
+             $.ajax({
+                 url: 'api/Users/ChangeData',
+                 type: "POST",
+                 data: JSON.stringify({
+                     'username': username, blocked: true, 'password': "", 'name': "", 'surname': "", 'gender': "", 'email': "", 'birthDate': "", 'roleId': 1
+                 }),
+                 contentType: "application/json; charset=utf-8",
+                 dataType: "json",
+                 success: function (data) {
+                     console.log(data);
+                     alert("Uspjesno blokiran korisnik!")
+
+                     LoadUsers();
+                 },
+                 error: function (error) {
+                     alert(error.responseJSON);
+                 }
+             })
+        }
+
+
+
+      function EditfitnessCenter(centerId) {
+          location.href = "FitnessCenter.html?centerId=" + centerId;
+       }
+
+        function DeleteFitnessCenter(centerId) {
+            var centerData = {
+                id: centerId,
+                'centerName': "",
+                deleted: true,
+                openingYear: 0,
+                'address': "",
+                'monthlyMembership': 0,
+                'annualMembership': 0,
+                'priceOfOneTraining': 0,
+                'priceOfOneGroupTraining': 0,
+                'priceOfOnePersonalTraining': 0
+            }
+
+            console.log(JSON.stringify(centerData));
+            $.ajax({
+                url: 'api/fitnessCenters',
+                type: "PUT",
+                data: JSON.stringify(centerData),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    console.log(data);
+                    LoadCenters();
+                    alert("Uspjesno obrisan fitnes centar!")
+                },
+                error: function (error) {
+                    if (error.status === 409) {
+                        alert("Postoje treninzi u budućnosti! Nije moguće obrisati Fitnes Centar!");
+                    } else {
+
+                    }
+                }
+            })
+        }
+
+        </script>
+</head>
+<body>
+    <button class="navigationBtn" onclick="Back()">Nazad</button>
+    <h1>Registrovani fitnes centri</h1>
+    <table class="tableDiv" id="fitnessCenters">
+    </table>
+    <h1>Lista trenera</h1>
+    <table  class="tableDiv" id="trainers">
+    </table>
+    <table>
+    </table>
+</body>
+</html>

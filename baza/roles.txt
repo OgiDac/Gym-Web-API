@@ -1,0 +1,1 @@
+[{"roleId":0,"roleName":"Owner"},{"roleId":1,"roleName":"Trainer"},{"roleId":2,"roleName":"Visitor"}]

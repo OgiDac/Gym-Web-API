@@ -1,0 +1,269 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="Scripts/jquery-3.4.1.js"></script>
+    <style>
+        body {
+            background: url('slika5.jpg');
+            background-size: 100vw 100vh;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+        }
+        table {
+            background-color: whitesmoke;
+            border-collapse: collapse;
+            width: 100%;
+            opacity: 0.8;
+            border-radius:8px;
+        }
+        .searchInput {
+            margin-right: 12px
+        }
+        .tableDiv {
+            background-color: white;
+            box-shadow: 0px 2px 12px rgba(204, 0, 255,0.3);
+            border-radius: 8px;
+        }
+
+        .navigationBtn {
+            padding: 8px;
+            text-transform: uppercase;
+            margin-right: 2px;
+            font-weight: 600;
+            background-color: #cc00ff;
+            color: white;
+            border-width: 0px;
+            border-radius: 4px;
+        }
+
+        .navigationBtn:hover {
+            background-color: #8f00b3;
+            cursor: pointer
+        }
+        p{
+            color:white;
+        }
+    </style>
+    <script>
+        var trainings = []; 
+        function getCookie(cookieName) {
+            let cookie = {};
+            document.cookie.split(';').forEach(function (el) {
+                let [key, value] = el.split('=');
+                cookie[key.trim()] = value;
+            })
+
+            console.log(cookie[cookieName])
+            return cookie[cookieName];
+        }
+        $(document).ready(function () {
+            function getCookie(cookieName) {
+                let cookie = {};
+                document.cookie.split(';').forEach(function (el) {
+                    let [key, value] = el.split('=');
+                    cookie[key.trim()] = value;
+                })
+
+                console.log(cookie[cookieName])
+                return cookie[cookieName];
+            }
+
+            let cookieData = document.cookie;
+
+            if (!cookieData || (getCookie("username") === "" && getCookie("roleId" === ""))) {
+                window.location.href = "LoginUser.html";
+            }
+            $.get("/api/groupTraining?id=", function (data, status) {
+
+                for (let i = 0; i < data.length; i++) {
+                    if (data[i].TrainerUsername === getCookie("username")) {
+                        trainings.push(data[i]);
+                    }
+                }
+                console.log(trainings)
+                PastTrainings();
+                FutureTrainings();
+
+            })
+        })
+
+        function UsersPreview(users) {
+           alert(users);
+        }
+
+        function PastTrainings(sort) {
+
+            let nameFilter = `<button onclick="PastTrainings(${sort === 1 ? 2 : 1})">${sort === 2 ? "↑" : "↓"}`;
+            let typeFilter = `<button onclick="PastTrainings(${sort === 4 ? 3 : 4})">${sort === 4 ? "↑" : "↓"}`;
+            let dateFilter = `<button onclick="PastTrainings(${sort === 6 ? 5 : 6})">${sort === 6 ? "↑" : "↓"}`;
+
+            var tempData = [...trainings];
+            console.log(sort)
+
+            switch (sort) {
+                case 1:
+                    tempData = tempData.sort((a, b) => {
+                        return a.TrainingName.localeCompare(b.TrainingName);
+                    })
+                    break;
+                case 2:
+                    tempData = tempData.sort((a, b) => {
+                        return b.TrainingName.localeCompare(a.TrainingName);
+                    })
+                    break;
+                case 3:
+                    tempData = tempData.sort((a, b) => {
+                        return a.TrainingType.localeCompare(b.TrainingType);
+                    })
+                    break;
+                case 4:
+                    tempData = tempData.sort((a, b) => {
+                        return b.TrainingType.localeCompare(a.TrainingType);
+                    })
+                    break;
+                case 5:
+                    tempData = tempData.sort((a, b) => {
+                        var parts = a.DateAndTime.split("/");
+                        var d1 = new Date(parseInt(parts[2], 10),
+                            parseInt(parts[1], 10) - 1,
+                            parseInt(parts[0], 10));
+
+                        var parts2 = b.DateAndTime.split("/");
+                        var d2 = new Date(parseInt(parts2[2], 10),
+                            parseInt(parts2[1], 10) - 1,
+                            parseInt(parts2[0], 10));
+                        return Number(d2) - Number(d1);
+                    })
+                    break;
+                case 6:
+                    tempData = tempData.sort((a, b) => {
+                        var parts = a.DateAndTime.split("/");
+                        var d1 = new Date(parseInt(parts[2], 10),
+                            parseInt(parts[1], 10) - 1,
+                            parseInt(parts[0], 10));
+
+                        var parts2 = b.DateAndTime.split("/");
+                        var d2 = new Date(parseInt(parts2[2], 10),
+                            parseInt(parts2[1], 10) - 1,
+                            parseInt(parts2[0], 10));
+                        return Number(d1) - Number(d2);
+                    })
+                    break;
+            }
+
+            let tableOPastfGroupTrainings = `<tr><th>Naziv ${nameFilter}</th><th>Tip treninga ${typeFilter}</th><th>Trajanje treninga</th><th>Datum i vrijeme treninga ${dateFilter}</th><th>Maksimalan broj posjetilaca</th><th>Spisak posjetilaca</th><th></th></tr>`;
+
+            for (let i = 0; i < tempData.length; i++) {
+                var parts = tempData[i].DateAndTime.split("/");
+                var d = new Date(parseInt(parts[2], 10),
+                    parseInt(parts[1], 10) - 1,
+                    parseInt(parts[0], 10));
+                var currentDate = new Date();
+
+                let trainingPastName = $("#trainingPastName").val();
+                let datePast = $("#datePast").val();
+                let trainingPastType = $("#trainingPastType").val();
+
+                console.log(trainingPastName);
+                console.log(datePast);
+                console.log(trainingPastType);
+
+                if (currentDate > d) {
+
+                    var parts2 = datePast.split("/");
+                    var d2 = new Date(parseInt(parts2[2], 10),
+                        parseInt(parts2[1], 10) - 1,
+                        parseInt(parts2[0], 10));
+
+
+                    if ((trainingPastName.length === 0 || tempData[i].TrainingName.includes(trainingPastName)) && (trainingPastType.length === 0 || tempData[i].TrainingType.includes(trainingPastType)) && (datePast.length === 0 || d.toString() === d2.toString())) {
+                        let groupTraining = '<td>' + tempData[i].TrainingName + '</td>';
+                        groupTraining += '<td>' + tempData[i].TrainingType + '</td>';
+                        groupTraining += '<td>' + tempData[i].TrainingDuration + '</td>';
+                        groupTraining += '<td>' + tempData[i].DateAndTime + '</td>';
+                        groupTraining += '<td>' + tempData[i].MaxNumberOfPeople + '</td>';
+                        groupTraining += '<td>' + (tempData[i].VisitorList === null ? "Nema prijavljenih" : `<button onClick="UsersPreview('${tempData[i].VisitorList}')">Pregled</button>`) + '</td>';
+
+                        tableOPastfGroupTrainings += '<tr>' + groupTraining + '</tr>';
+                    }
+
+                  
+                }
+            }
+
+            $('#trainingHistory').html(tableOPastfGroupTrainings);
+        }
+        function FutureTrainings() {
+            let tableOPastfGroupTrainings = '<tr><th>Naziv</th><th>Tip treninga</th><th>Trajanje treninga</th><th>Datum i vrijeme treninga</th><th>Maksimalan broj posjetilaca</th><th>Spisak posjetilaca</th><th></th></tr>';
+
+            for (let i = 0; i < trainings.length; i++) {
+                var parts = trainings[i].DateAndTime.split("/");
+                var d = new Date(parseInt(parts[2], 10),
+                    parseInt(parts[1], 10) - 1,
+                    parseInt(parts[0], 10));
+                var currentDate = new Date();
+
+                let trainingPastName = $("#trainingFutureName").val();
+                let datePast = $("#dateFuture").val();
+                let trainingPastType = $("#trainingFutureType").val();
+
+                if (currentDate <= d) {
+
+                    var parts2 = datePast.split("/");
+                    var d2 = new Date(parseInt(parts2[2], 10),
+                        parseInt(parts2[1], 10) - 1,
+                        parseInt(parts2[0], 10));
+
+
+                    if ((trainingPastName.length === 0 || trainings[i].TrainingName.includes(trainingPastName)) && (trainingPastType.length === 0 || trainings[i].TrainingType.includes(trainingPastType)) && (datePast.length === 0 || d.toString() === d2.toString())) {
+                        let groupTraining = '<td>' + trainings[i].TrainingName + '</td>';
+                        groupTraining += '<td>' + trainings[i].TrainingType + '</td>';
+                        groupTraining += '<td>' + trainings[i].TrainingDuration + '</td>';
+                        groupTraining += '<td>' + trainings[i].DateAndTime + '</td>';
+                        groupTraining += '<td>' + trainings[i].MaxNumberOfPeople + '</td>';
+                        groupTraining += '<td>' + (trainings[i].VisitorList === null || trainings[i].VisitorList.length===0 ? "Nema prijavljenih" : `<button onClick="UsersPreview('${trainings[i].VisitorList}')">Pregled</button>`) + '</td>';
+
+                        tableOPastfGroupTrainings += '<tr>' + groupTraining + '</tr>';
+                    }
+
+                  
+                }
+            }
+
+            $('#trainingFuture').html(tableOPastfGroupTrainings);
+        }
+        function Back() {
+            location.href = 'FitnessCenters.html';
+        }
+    </script>
+
+</head>
+<body>
+    <button class="navigationBtn" onclick="Back()">Vrati se na pocetnu stranu</button>
+    <h1>Pregled predstojećih treninga</h1>
+    <div class="tableDiv">
+        <table border="1" id="trainingFuture">
+            <tr><th>Naziv</th><th>Tip treninga</th><th>Fitnes Centar</th><th>Trajanje treninga</th><th>Datum i vrijeme treninga</th><th>Maksimalan broj posjetilaca</th><th>Spisak posjetilaca</th><th></th></tr>
+        </table>
+    </div>
+    <div>
+        <p>Pretrazi po nazivu treninga, tipu treninga i datumu</p>
+        <input id="trainingFutureName" class="searchInput" type="text" placeholder="Naziv treninga" /><input placeholder="dd/mm/yyyy" id="dateFuture" class="searchInput" type="text" /><input id="trainingFutureType" class="searchInput" type="text" placeholder="Tip Treninga" /><button onclick="FutureTrainings()">Pretrazi</button>
+    </div>
+    <h1>Pregled prošlih treninga</h1>
+    <div class="tableDiv">
+        <table border="1" id="trainingHistory">
+            <tr><th>Naziv</th><th>Tip treninga</th><th>Fitnes Centar</th><th>Trajanje treninga</th><th>Datum i vrijeme treninga</th><th>Maksimalan broj posjetilaca</th><th>Spisak posjetilaca</th><th></th></tr>
+        </table>
+  </div>
+        <div>
+            <p>Pretrazi po nazivu treninga, tipu treninga i datumu</p>
+            <input id="trainingPastName" class="searchInput" type="text" placeholder="Naziv treninga" /><input placeholder="dd/mm/yyyy" id="datePast" class="searchInput" type="text" /><input id="trainingPastType" class="searchInput" type="text" placeholder="Tip Treninga" /><button onclick="PastTrainings()">Pretrazi</button>
+        </div>
+</body>
+</html>

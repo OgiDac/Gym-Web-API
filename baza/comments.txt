@@ -1,0 +1,1 @@
+[{"Status":2,"Visitor":"korisnik1","FitnessCenter":"1662929225","CommentsTxt":"Odlican!","Raiting":5},{"Status":2,"Visitor":"korisnik2","FitnessCenter":"1662929262","CommentsTxt":"Nisam zadovoljan! ","Raiting":1},{"Status":1,"Visitor":"korisnik2","FitnessCenter":"1662929262","CommentsTxt":"Super je!","Raiting":5}]

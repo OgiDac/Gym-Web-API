@@ -1,0 +1,96 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8" />.
+    <style>
+        body {
+            background: url('slika10.jpg');
+            background-size: 100vw 100vh;
+        }
+        h1{
+            text-align:center;
+        }
+        .center {
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+    <script src="Scripts/jquery-3.4.1.js"></script>
+    <script type="text/javascript">
+
+        function getCookie(cookieName) {
+            let cookie = {};
+            document.cookie.split(';').forEach(function (el) {
+                let [key, value] = el.split('=');
+                cookie[key.trim()] = value;
+            })
+
+            console.log(cookie[cookieName])
+            return cookie[cookieName];
+        }
+
+        $(document).ready(function () {
+            if (!getCookie("username")){
+                window.location.href = "LoginUser.html";
+            }
+        })
+
+        function Change() {
+            let username = getCookie("username");
+            
+            let password = $('#password').val();
+            
+            let name = $('#name').val();
+            
+            let surname = $('#surname').val();
+           
+            let gender = $('#gender').val();
+
+            let email = $('#email').val();
+            
+            let birthDate = $('#birthDate').val();          
+           
+
+            console.log({
+                'username': username, 'password': password, 'name': name, 'surname': surname, 'gender': gender, 'email': email, 'birthDate': birthDate, 'roleId': 2
+            });
+            const userData = {
+                'username': username, 'password': password, 'name': name, 'surname': surname, 'gender': gender, 'email': email, 'birthDate': birthDate, 'roleId': 2
+            };
+
+            $.ajax({
+                url: 'api/Users/ChangeData',
+                type: "POST",
+                data: JSON.stringify({
+                    'username': username, blocked: false, 'password': password, 'name': name, 'surname': surname, 'gender': gender, 'email': email, 'birthDate': birthDate, 'roleId': getCookie("roleId")
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    console.log(data);
+                    alert("Uspjesno izmjenjeni podaci!")
+                    window.location.href = 'ProfilePage.html';
+                },
+                error: function (error) {
+                    alert(error.responseJSON);
+                }
+            })
+            
+        }
+
+    </script>
+</head>
+<body>
+    <h1>Izmjena podataka</h1>
+    <table border="0" class="center">
+        <tr><td>Lozinka: </td><td><input type="password" id="password" name="password" /></td></tr>
+        <tr><td>Ime: </td><td><input type="text" id="name" name="name" /></td></tr>
+        <tr><td>Prezime: </td><td><input type="text" id="surname" name="surname" /></td></tr>
+        <tr><td>Pol: </td><td><input type="text" id="gender" name="gender" /></td></tr>
+        <tr><td>Email adresa: </td><td><input type="text" id="email" name="email" /></td></tr>
+        <tr><td>Datum rodjenja: </td><td><input type="text" id="birthDate" name="birthDate" /></td></tr>
+        <tr><td colspan="2"><input type="button" value="Potvrdi" id="register" onclick="Change()" /></td></tr>
+    </table>
+</body>
+</html>

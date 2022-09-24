@@ -155,22 +155,49 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\SampleDirection.cs" />
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
+    <Compile Include="Controllers\CommentsController.cs" />
+    <Compile Include="Controllers\FitnessCentersController.cs" />
+    <Compile Include="Controllers\GroupTrainingController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\RoleController.cs" />
+    <Compile Include="Controllers\TrainingTypesController.cs" />
+    <Compile Include="Controllers\UsersController.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\Class1.cs" />
+    <Compile Include="Models\Comment.cs" />
+    <Compile Include="Models\EditFitnessCenter.cs" />
+    <Compile Include="Models\EditTraining.cs" />
+    <Compile Include="Models\EditUser.cs" />
+    <Compile Include="Models\FitnessCenter.cs" />
+    <Compile Include="Models\GroupTraining.cs" />
+    <Compile Include="Models\NewUser.cs" />
+    <Compile Include="Models\Role.cs" />
+    <Compile Include="Models\TrainingType.cs" />
+    <Compile Include="Models\UpdateComment.cs" />
+    <Compile Include="Models\User.cs" />
+    <Compile Include="Models\VisitorGroupTraining.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Areas\HelpPage\HelpPage.css" />
+    <Content Include="ChangeTheData.html" />
     <Content Include="Content\bootstrap-theme.css" />
     <Content Include="Content\bootstrap-theme.min.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="favicon.ico" />
+    <Content Include="FitnessCenter.html" />
+    <Content Include="FitnessCenterDetails.html" />
+    <Content Include="FitnessCenters.html" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
+    <Content Include="GroupTraining.html" />
+    <Content Include="LoginUser.html" />
+    <Content Include="ProfilePage.html" />
+    <Content Include="RegisterUser.html" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Areas\HelpPage\Views\Web.config" />
@@ -198,6 +225,10 @@
     <Content Include="Scripts\jquery-3.4.1.slim.js" />
     <Content Include="Scripts\jquery-3.4.1.slim.min.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
+    <Content Include="Trainer.html" />
+    <Content Include="TrainersAndCenters.html" />
+    <Content Include="TrainingModify.html" />
+    <Content Include="Trainings.html" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -215,7 +246,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Models\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff2" />

@@ -1,0 +1,402 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8" />
+    <style>
+        body {
+            background: url('slika5.jpg');
+            background-size: 100vw 100vh;
+        }
+        h1{
+            color:white;
+            text-align:center;
+        }
+        p{
+            color:white;
+            text-align:center;
+        }
+        table {
+            background-color: whitesmoke;
+            border-collapse: collapse;
+            width: 100%;
+            opacity: 0.8;
+        }
+        #commentList{
+            max-height:300px;
+            overflow:auto;
+            background-color:grey;
+        }
+        .comment{
+            margin:8px;
+            background-color:white;
+            color:black;
+            padding:4px;
+            border-radius:4px
+
+        }
+        #textArea{
+            margin-top:12px;
+            width:50%;
+        }
+        #ratingSelect{
+            margin-bottom:4px;
+        }
+        #ratingText{
+           color:white;
+           font-weight:700;
+        }
+        .tableDiv {
+            background-color: white;
+            box-shadow: 0px 2px 12px rgba(204, 0, 255,0.3);
+            border-radius: 8px;
+        }
+
+        .navigationBtn {
+            padding: 8px;
+            text-transform: uppercase;
+            margin-right: 2px;
+            font-weight: 600;
+            background-color: #cc00ff;
+            color: white;
+            border-width: 0px;
+            border-radius: 4px;
+        }
+
+            .navigationBtn:hover {
+                background-color: #8f00b3;
+                cursor: pointer
+            }
+    </style>
+    <script src="Scripts/jquery-3.4.1.js"></script>
+    <script type="text/javascript">
+       
+        function loadGroupTraining() {
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const myParam = urlParams.get('fitnessCenterId');
+            $.get("/api/groupTraining?id=" + myParam, function (data, status) {
+
+
+                let tableOfGroupTrainings = '<tr><th>Naziv</th><th>Tip treninga</th><th>Fitnes Centar</th><th>Trajanje treninga</th><th>Datum i vrijeme treninga</th><th>Maksimalan broj posjetilaca</th><th>Spisak posjetilaca</th><th></th></tr>';
+                for (element in data) {
+                   
+                    var parts = data[element].DateAndTime.split("/");
+                    var d = new Date(parseInt(parts[2], 10),
+                        parseInt(parts[1], 10) - 1,
+                        parseInt(parts[0], 10));
+                    var currentDate = new Date();
+                    var dLessThree = new Date(parseInt(parts[2], 10),
+                        parseInt(parts[1], 10) - 1,
+                        parseInt(parts[0], 10)-3);
+
+                    if (d > currentDate && !data[element].Deleted) {
+                        let groupTraining = '<td>' + data[element].TrainingName + '</td>';
+                    groupTraining += '<td>' + data[element].TrainingType + '</td>';
+                    groupTraining += '<td>' + data[element].FitnessCenter + '</td>';
+                    groupTraining += '<td>' + data[element].TrainingDuration + '</td>';
+                    groupTraining += '<td>' + data[element].DateAndTime + '</td>';
+                    groupTraining += '<td>' + data[element].MaxNumberOfPeople + '</td>';
+                        groupTraining += '<td>' + (data[element].VisitorList === null ? "Nema prijavljenih" : data[element].VisitorList) + '</td>';
+                        if (getCookie("username") && getCookie("username").length>0 && dLessThree > currentDate && getCookie("roleId") === "2" && (!data[element].VisitorList || (!data[element].VisitorList.find((e) => e === getCookie("username")) && data[element].VisitorList.length < parseInt(data[element].MaxNumberOfPeople.toString())))) {
+                        groupTraining += '<td><button onClick="Apply(' + data[element].Id + ',false)">Prijavi se</button></td>';
+                        }
+                        if (getCookie("username") === data[element].TrainerUsername && (!data[element].VisitorList || data[element].VisitorList.length === 0)){
+                            groupTraining += '<td><button onClick="Apply(' + data[element].Id + ',true)">Obrisi</button></td>';
+                        }
+                        if (getCookie("username") === data[element].TrainerUsername) {
+
+                            groupTraining += '<td><button onClick="Edit(' + data[element].Id + ',true)">Izmjeni</button></td>';
+                        }
+                    tableOfGroupTrainings += '<tr>' + groupTraining + '</tr>';
+                }
+                }
+
+                let tableOfHistoryGroupTrainings = '<tr><th>Naziv</th><th>Tip treninga</th><th>Fitnes Centar</th><th>Trajanje treninga</th><th>Datum i vrijeme treninga</th><th>Maksimalan broj posjetilaca</th><th>Spisak posjetilaca</th><th></th></tr>';
+                for (element in data) {
+                    var parts = data[element].DateAndTime.split("/");
+                    var d = new Date(parseInt(parts[2], 10),
+                        parseInt(parts[1], 10) - 1,
+                        parseInt(parts[0], 10));
+                    var currentDate = new Date();
+
+                    if ((d < currentDate) && !data[element].Deleted) {
+                        let groupTraining = '<td>' + data[element].TrainingName + '</td>';
+                    groupTraining += '<td>' + data[element].TrainingType + '</td>';
+                    groupTraining += '<td>' + data[element].FitnessCenter + '</td>';
+                    groupTraining += '<td>' + data[element].TrainingDuration + '</td>';
+                    groupTraining += '<td>' + data[element].DateAndTime + '</td>';
+                    groupTraining += '<td>' + data[element].MaxNumberOfPeople + '</td>';
+                    groupTraining += '<td>' + (data[element].VisitorList === null ? "Nema prijavljenih" : data[element].VisitorList) + '</td>';
+                   
+                        tableOfHistoryGroupTrainings += '<tr>' + groupTraining + '</tr>';
+                }
+                }
+                $('#trainingHistory').html(tableOfHistoryGroupTrainings);
+                $('#content1').html(tableOfGroupTrainings);
+
+            });
+        }
+
+        function Edit(id) {
+            window.location.href = 'GroupTraining.html?trainingId=' + id;
+        }
+
+        function GetCommentStatus(status) {
+            switch (status) {
+                case 0:
+                    return "Na čekanju";
+                case 1:
+                    return "Odbijen";
+                case 2:
+                    return "Odobren";
+            }
+        }
+
+        function ChangeCommentStatus(status, username) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const myParam = urlParams.get('fitnessCenterId');
+
+       
+            $.ajax({
+                url: 'api/comments',
+                type: "PUT",
+                data: JSON.stringify({
+                    visitor: username,
+                    fitnessCenter: myParam,
+                    status: parseInt(status)
+
+                }),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    GetComments();
+                    alert("Uspjesno izmjenjen status komentara!")
+                },
+                error: function (error) {
+
+                    alert("Greska!");
+                }
+            })
+        }
+
+        function GetComments() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const myParam = urlParams.get('fitnessCenterId');
+            $.get(`/api/comments`, function (data, status) {
+                data = JSON.parse(data);
+
+                let comment = "";
+
+                for (let i = 0; i < data.length; i++) {
+                    if (data[i].FitnessCenter === myParam&&(data[i].Status === 2 || getCookie("roleId") === "0")) {
+
+                        comment += `<div class="comment">
+                                 <div>Korisnicko ime:${data[i].Visitor}</div>
+                                 <div>Komentar: ${data[i].CommentsTxt}</div>
+                                 <div>Ocjena: ${data[i].Raiting}</div>
+                                   ${ getCookie("roleId") === "0"?` <div>Status komentara: ${GetCommentStatus(data[i].Status)}</div>`:""}
+                                 ${data[i].Status === 0 ?
+                            `<button onclick="ChangeCommentStatus('${2}','${data[i].Visitor}');">Odobri</button> <button onclick="ChangeCommentStatus('${1}','${data[i].Visitor}');">Odbij</button>`
+                            : ""}
+                                </div>`;
+                    }
+                }
+
+                $("#commentList").html(comment);
+            })
+        }
+
+        function Apply(id,deleteTraining) {
+            function getCookie(cookieName) {
+                let cookie = {};
+                document.cookie.split(';').forEach(function (el) {
+                    let [key, value] = el.split('=');
+                    cookie[key.trim()] = value;
+                })
+                return cookie[cookieName];
+            }
+
+            let username = deleteTraining?"": getCookie("username");
+            console.log(JSON.stringify({
+                username: username,
+                tariningId: id + "",
+                delete: deleteTraining,
+            }));
+           $.ajax({
+                url: 'api/groupTraining',
+                type: "PUT",
+                data: JSON.stringify({
+                    username: username,
+                    tariningId: id + "",
+                    delete: deleteTraining,
+                }),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    console.log(data);
+                    loadGroupTraining();
+                    alert("uspjesno prijavljen korisnik!")
+                },
+                error: function (error) {
+                    alert(error.responseJSON);
+                }
+            })
+        }
+        
+        function Back() {
+            location.href = 'FitnessCenters.html';
+        }
+        function getCookie(cookieName) {
+            let cookie = {};
+            document.cookie.split(';').forEach(function (el) {
+                let [key, value] = el.split('=');
+                cookie[key.trim()] = value;
+            })
+
+            console.log(cookie[cookieName])
+            return cookie[cookieName];
+        }
+
+        let cookieData = document.cookie;
+        
+        $(document).ready(function () {
+            GetComments();
+            let username = getCookie("username");
+            console.log(username);
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const myParam = urlParams.get('fitnessCenterId');
+
+            console.log(`/api/fitnessCenters?id=${myParam}&address=&openingYear=&centerName=&sort=`);
+
+            if (getCookie("roleId") !== "2") {
+                $("#commentsArea").hide();
+            }
+
+            function loadDetails() {
+                $.get(`/api/fitnessCenters?id=${myParam}&address=&openingYear=&centerName=&sort=`, function (data, status) {
+
+                    console.log(data);
+
+                    let fitnessCenter = "Fitnes centar: " + data[0].CenterName;
+                    $('#centerName').html(fitnessCenter);
+
+                    let address = "Adresa: " + data[0].Address;
+                    $('#address').html(address);
+
+                    let openingYear = "Godina otvaranja: " + data[0].OpeningYear;
+                    $('#openingYear').html(openingYear);
+
+                    let owner = "Vlasnik: " + data[0].Owner;
+                    $('#owner').html(owner);
+
+                    let monthlyMembership = "Mjesecna clanarina: " + data[0].MonthlyMembership;
+                    $('#monthlyMembership').html(monthlyMembership);
+
+                    let annualMembership = "Godisnja clanarina: " + data[0].AnnualMembership;
+                    $('#annualMembership').html(annualMembership);
+
+                    let priceOfOneTraining = "Cijena jednog treninga: " + data[0].PriceOfOneTraining;
+                    $('#priceOfOneTraining').html(priceOfOneTraining);
+
+                    let priceOfOneGroupTraining = "Cijena jendog grupnog treninga: " + data[0].PriceOfOneGroupTraining;
+                    $('#priceOfOneGroupTraining').html(priceOfOneGroupTraining);
+
+                    let detail = "Cijena jendog treninga sa personalnim trenerom: " + data[0].PriceOfOnePersonalTraining;
+                    $('#priceOfOnePersonalTraining').html(detail);
+
+                })
+            }
+            loadDetails();
+            loadGroupTraining();
+           
+            
+        })
+
+        function LeaveComment() {
+            let ratingSelect = $("#ratingSelect").val();
+            let textArea = $("#textArea").val();
+            const urlParams = new URLSearchParams(window.location.search);
+            const myParam = urlParams.get('fitnessCenterId');
+
+
+            console.log({
+                visitor: getCookie("username"),
+                fitnessCenter: myParam,
+                commentsTxt: textArea,
+                raiting: parseInt(ratingSelect),
+                status: 0,
+            })
+ 
+            if (textArea.length > 0) {
+                $.ajax({
+                    url: 'api/comments',
+                    type: "POST",
+                    data: JSON.stringify({
+                        visitor: getCookie("username"),
+                        fitnessCenter: myParam,
+                        commentsTxt: textArea,
+                        raiting: parseInt(ratingSelect),
+                        status: 0,
+                    }),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        GetComments();
+                        alert("Uspjesno dodat komentar!")
+                    },
+                    error: function (error) {
+                        if (error.status === 406) {
+
+                            alert("Niste učestvovali ni na jednom treningu!");
+                        }
+                    }
+                })
+            } else {
+                alert("Unesite komentar!");
+            }
+        }
+    </script>
+</head>
+<body>
+    <button class="navigationBtn" onclick="Back()">Vrati se na pocetnu stranu</button>
+    <h1>Detalji</h1>
+    <p id="centerName"></p>
+    <p id="address"></p>
+    <p id="openingYear"></p>
+    <p id="owner"></p>
+    <p id="monthlyMembership"></p>
+    <p id="annualMembership"></p>
+    <p id="priceOfOneTraining"></p>
+    <p id="priceOfOneGroupTraining"></p>
+    <p id="priceOfOnePersonalTraining"></p>
+    <br />
+    <table class="tableDiv" border="1" id="content1">
+        <tr><th>Naziv</th><th>Tip treninga</th><th>Fitnes Centar</th><th>Trajanje treninga</th><th>Datum i vrijeme treninga</th><th>Maksimalan broj posjetilaca</th><th>Spisak posjetilaca</th><th></th></tr>
+    </table>
+    <br />
+    <p>Istorija treninga</p>
+    <table class="tableDiv" border="1" id="trainingHistory">
+        <tr><th>Naziv</th><th>Tip treninga</th><th>Fitnes Centar</th><th>Trajanje treninga</th><th>Datum i vrijeme treninga</th><th>Maksimalan broj posjetilaca</th><th>Spisak posjetilaca</th><th></th></tr>
+    </table>
+    <div>
+        <h1>Komentari</h1>
+        <div id="commentList">
+         
+        </div>
+    </div>
+    <div id="commentsArea">
+        <textarea id="textArea" ></textarea><br />
+        <span id="ratingText">Ocjena: </span>
+        <select id="ratingSelect">
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
+        </select><br />
+        <button onclick="LeaveComment()">Ostavi komentar</button>
+    </div>
+</body>
+</html>
